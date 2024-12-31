@@ -2,15 +2,16 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+from catboost import CatBoostClassifier
 
+# Load the saved scaler and model
 scaler = joblib.load('scaler.pkl')
-model = joblib.load('loan_default_model_cb.pkl') 
-
+model = joblib.load('loan_default_model_cb.pkl')
 
 # Define the feature columns
 feature_cols = [
     'age',
-    'log_cash_incoming_30days', 
+    'log_cash_incoming_30days',
     'gps_fix_count',
     'unique_locations_count',
     'avg_time_between_opens',
@@ -25,7 +26,7 @@ feature_cols = [
 numerical_cols = [
     'age',
     'log_cash_incoming_30days',
-    'gps_fix_count', 
+    'gps_fix_count',
     'unique_locations_count',
     'avg_time_between_opens',
     'night_usage_ratio',
@@ -46,7 +47,7 @@ def preprocess_input(user_input):
     # Handle missing GPS features if any
     gps_feature_cols = [
         'gps_fix_count',
-        'unique_locations_count', 
+        'unique_locations_count',
         'avg_time_between_opens',
         'night_usage_ratio',
         'num_clusters'
@@ -112,27 +113,23 @@ def main():
     }
 
     if st.button("Predict Loan Outcome"):
-        try:
-            # Preprocess input
-            input_data = preprocess_input(user_input)
+        # Preprocess input
+        input_data = preprocess_input(user_input)
 
-            # Make prediction
-            prediction = model.predict(input_data)
-            prediction_proba = model.predict_proba(input_data)
+        # Make prediction
+        prediction = model.predict(input_data)
+        prediction_proba = model.predict_proba(input_data)
 
-            # Display result
-            outcome = 'Repaid' if prediction[0] == 1 else 'Defaulted'
-            proba = prediction_proba[0][prediction[0]]
+        # Display result
+        outcome = 'Repaid' if prediction[0] == 1 else 'Defaulted'
+        proba = prediction_proba[0][prediction[0]]
 
-            st.write(f"### Prediction: {outcome}")
-            st.write(f"Probability: {proba:.2f}")
+        st.write(f"### Prediction: {outcome}")
+        st.write(f"Probability: {proba:.2f}")
 
-            # Optionally, display the input data
-            st.write("#### Input Data:")
-            st.write(input_data)
-            
-        except Exception as e:
-            st.error(f"Error making prediction: {str(e)}")
+        # Optionally, display the input data
+        st.write("#### Input Data:")
+        st.write(input_data)
 
 if __name__ == '__main__':
     main()
